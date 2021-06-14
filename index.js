@@ -2,8 +2,8 @@
 const http = require('http'); 
 const express = require('express'); 
 const app = express(); 
-require('dotenv-safe').config();
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+require('dotenv').config()
  
 app.use(express.json());
 
@@ -18,6 +18,7 @@ app.get('/clientes', (req, res, next) => {
 
 // AUTENTICACAO
 app.post('/login', (req, res) => {
+    console.log('lalau')
 
     const {user, password} = req.body
 
