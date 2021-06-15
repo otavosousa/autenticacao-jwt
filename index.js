@@ -11,14 +11,9 @@ app.get('/', (req, res, next) => {
     res.json({message: "Tudo ok por aqui!"});
 })
 
-app.get('/clientes', (req, res, next) => { 
-    console.log("Retornou todos clientes!");
-    res.json([{id:1,nome:'Otavio'}]);
-}) 
 
 // AUTENTICACAO
 app.post('/login', (req, res) => {
-    console.log('lalau')
 
     const {user, password} = req.body
 
@@ -28,16 +23,40 @@ app.post('/login', (req, res) => {
         const id = 1 // pega o id lá do user do banco
 
         // criar token
-        const token = jwt.sign({id}, process.env.SECRET, {
-            expiresIn: '300' // expira em 5min
-        })
+        const token = jwt.sign({id}, process.env.SECRET)
         
-        res.json({auth: true, token})
+        return res.json({auth: true, token})
     }
 
     res.status(500).json({message: 'Usuario inválido'})
 
 })
+
+// AUTORIZAÇÃO
+function verifyJWT(req, res, next){
+    
+    // verifica token mandado pelo cliente
+    const token = req.headers['x-access-token']
+
+    console.log('meu token: ' + token)
+
+    if(!token) return res.status(400).json({message: 'Sem autorização'})
+
+    jwt.verify(token, process.env.SECRET, function(err, decode){
+
+        if(err) return res.status(500).json({message: 'Sem autorização'})
+
+        // tudo OK: salva no request para o acesso dele às rotas
+        req.userId = decode.id
+        next()
+    })
+}
+
+app.get('/app', verifyJWT, (req, res, next) => { 
+
+    console.log("Entrou no app");
+    res.json([{id:1,nome:'Otavio'}]);
+}) 
 
 app.post(('/logout', (req, res) => {
 
